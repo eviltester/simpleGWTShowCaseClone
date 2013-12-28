@@ -1,0 +1,321 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <title>Showcase of Features: Checkbox</title>
+    <script type="text/javascript" src="js/jquery-1.6.1.min.js"></script>
+    <script type="text/javascript" src="js/jquery.field_selection.js"></script>
+    <script type="text/javascript" src="js/jquery.copyEvents.min.js"></script>
+    <script type="text/javascript" src="js/jquery.jeditable.mini.js"></script>
+    <script type="text/javascript">
+
+            var menus =[
+                        {name: 'Widgets', items: [{name:'Checkbox', click: checkboxPanel},{name:'Basic Button', click: basicButtonPanel},{name:'Hyperlink', click: hyperlinksPanel},{name:'Radio Button', click: radioButtonsPanel}]},
+                        {name: 'Lists and Menus', items: [{name:'List Box'},{name:'Suggest Box'}]},
+                        {name: 'Text Input', items: [{name:'Basic Text', click: basicTextPanel}]},
+                        {name: 'Tables', items: [{name:'Grid'},{name:'Flex Table', click: flexTablePanel}]},
+                        {name: 'Cell Widgets', items: [{name:'Cell List'},{name:'Cell Table', click: cellTablePanel}]}
+                ];
+
+        function createSideMenu(sideMenuName){
+            var sideMenu = $('<div style="position:relative;padding-left:16px;" />').addClass('side_menu');
+            var menu= $('.widget_menu').append(sideMenu);
+            var image = $('<div style="position:absolute;left:0px;width:15px;height:15px;"><img src="images/folder-horizontal.png"/></div>');
+
+            var menuItem = $('<div style="padding-left: 3px;"/>').addClass('side_menu_head').text(sideMenuName);
+            $(sideMenu).append(image);
+            $(sideMenu).append(menuItem);
+
+
+            image.click(function() {
+
+                // GALD-WOBF == side_menu_item
+                var clicks = [];
+                var items = $(this).siblings(".side_menu_body").children('.GALD-WOBF');
+                var menuName = $(this).siblings(".side_menu_head").text();
+
+                var expanding =false;
+
+                if(items.length==0){
+                    expanding = true;
+                }
+
+                if(expanding){
+                    createChildrenForMenuName(menuName);
+                }
+
+                items = $(this).siblings(".side_menu_body").children('.GALD-WOBF');
+
+                for(var i = 0; i<items.length; i++){
+                    // remove all clicks from children
+                    var newItem = $('<div />');
+                    clicks[i]=newItem.copyEvents(items[i]);
+                   $(items[i]).unbind("click");
+                }
+                $(this).siblings(".side_menu_body").slideToggle(1000,function(){
+                    // put all events back when done
+                    for(var i = 0; i<items.length; i++){
+                        $(items[i]).copyEvents(clicks[i]);
+                        if(!expanding){
+                           $(items[i]).remove();
+                        }
+                    }
+                });
+
+
+            });
+            var menuBody = $('<div />').addClass('side_menu_body');
+            $(sideMenu).append(menuBody);
+            return sideMenu;
+        }
+
+        function createChildrenForMenuName(aMenuName){
+            for(var menuCount = 0; menuCount < menus.length; menuCount++){
+                var aMenu = menus[menuCount];
+                if(aMenu.name == aMenuName){
+                    for(var i =0; i<aMenu.items.length;i++){
+                        createSubMenu(aMenuName,aMenu.items[i].name, aMenu.items[i].click);
+                    }
+                }
+            }
+        }
+
+        function getSideMenuHead(sideMenuName){
+            return $('.side_menu_head').filter(function(index){return $(this).text()==sideMenuName;});
+        };
+
+        function createSubMenu(sideMenuName, subMenuName, onClickFunction) {
+            var subMenuItem = $('<div />').addClass('GALD-WOBF').text(subMenuName);
+            //var sideMenuBody = $('.side_menu_head').filter(function(index){return $(this).text()==sideMenuName;}).next('.side_menu_body');
+            var sideMenuBody = getSideMenuHead(sideMenuName).next('.side_menu_body');
+            sideMenuBody.append(subMenuItem);
+            if(onClickFunction){
+                subMenuItem.click(onClickFunction);
+            }else{
+                subMenuItem.click(function(){alert("Not Implemented")});
+            }
+           return subMenuItem;
+       }
+
+        function clearPanel(){
+            $('.panel').children().remove();
+        }
+
+        function setPanelTitle(aTitle,aDescription){
+            document.title = "Showcase of Features: " + aTitle;
+            $('.panel').append($('<div />').addClass('title').text(aTitle));
+            $('.panel').append($('<div />').addClass('description').text(aDescription));
+        }
+
+        function basicButtonPanel(){
+            clearPanel();
+            setPanelTitle("Basic Button", "Basic button widgets");
+            $('.panel').append($('<div style="margin-left: 10px; margin-right: 10px;" name="basicbutton"><table cellspacing="10" cellpadding="0"><tbody><tr><td align="left" style="vertical-align: top; "><button type="button" class="gwt-Button" id="gwt-debug-cwBasicButton-normal">Normal Button</button></td><td align="left" style="vertical-align: top; "><button type="button" class="gwt-Button" id="gwt-debug-cwBasicButton-disabled" disabled="">Disabled Button</button></td></tr></tbody></table></div>'));
+            $('#gwt-debug-cwBasicButton-normal').click(function(){alert('Stop poking me!')});
+        }
+
+        function basicTextPanel(){
+            clearPanel();
+            setPanelTitle("Basic Text", "Components to handle text entry");
+            $('.panel').append($('<div><b>Normal text box:</b></div>'));
+            $('.panel').append($('<table cellspacing="4" cellpadding="0"><tbody><tr><td align="left" style="vertical-align: top; "><input type="text" class="gwt-TextBox" id="gwt-debug-cwBasicText-textbox" dir="ltr"></td><td align="left" style="vertical-align: top; "><div id="selectText">Selected: 0, 0</div></td></tr></tbody></table>'));
+            $('#gwt-debug-cwBasicText-textbox').bind("keydown keyup keypress mousemove", function(){
+                var range = $(this).getSelection();
+                // this would be easier with an id on the div but then the automation wouldn't be so hard
+                var item = $(this).parent().parent().children().last().find('div');
+                item.text("Selected: " + range.start + "," + range.length);
+            });
+        }
+
+      function flexTablePanel(){
+            clearPanel();
+            setPanelTitle("Flex Table", "It spans rows");
+            $('.panel').append('<div style="margin-left: 10px; margin-right: 10px; "><table border="1" style="width: 32em; " cellspacing="5" cellpadding="3" id="gwt-debug-cwFlexTable"><colgroup><col></colgroup><tbody><tr><td colspan="2" id="gwt-debug-cwFlexTable-0-0">This is a FlexTable that supports <b>colspans</b> and <b>rowspans</b>.  You can use it to format your page or as a special purpose table.</td><td align="left" style="vertical-align: top; " rowspan="2" id="gwt-debug-cwFlexTable-0-1"><table cellspacing="0" cellpadding="0" class="cw-FlexTable-buttonPanel"><tbody><tr><td align="left" style="vertical-align: top; "><button type="button" class="gwt-Button sc-FixedWidthButton">Add a row</button></td></tr><tr><td align="left" style="vertical-align: top; "><button type="button" class="gwt-Button sc-FixedWidthButton">Remove a row</button></td></tr></tbody></table></td></tr><tr><td>item</td><td>item</td></tr><tr><td>item</td><td>item</td></tr></tbody></table></div>');
+            $('#gwt-debug-cwFlexTable-0-1').find('button').first().click(function(){
+                $('#gwt-debug-cwFlexTable').find('tbody').first().append('<tr><td>item</td><td>item</td></tr>');
+            });
+            $('#gwt-debug-cwFlexTable-0-1').find('button').last().click(function() {
+                var rows =  $('#gwt-debug-cwFlexTable').find('tbody').first().find('tr');
+                if(rows.length>3){
+                    rows.last().remove();
+                }
+            });
+        }
+      function hyperlinksPanel(){
+            clearPanel();
+            setPanelTitle("Hyperlink", "Hyperlinks go jumpy");
+            $('.panel').append($('<div><a href="#basicbutton" id="gwt-debug-cwHyperlink-com.google.gwt.sample.showcase.client.content.widgets.CwBasicButton">Basic Button</a></div>').click(basicButtonPanel));
+            $('.panel').append($('<div><a href="#radiobutton" id="gwt-debug-cwHyperlink-com.google.gwt.sample.showcase.client.content.widgets.CwRadioButton">Radio Button</a></div>').click(radioButtonsPanel));
+        }
+
+      function checkboxPanel(){
+            clearPanel();
+            setPanelTitle("Checkbox", "Checkboxes");
+          $('.panel').append('<table cellspacing="0" cellpadding="0"><tbody/></table>');
+          var tbody = $('.panel').find('tbody');
+            tbody.append($('<tr><td align="left" style="vertical-align:top;"><div><b>Check all days that you are available:</b></div></td></tr>'));
+            var days = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+          for(var daycount=0;daycount<days.length;daycount++){
+
+              var baseID = 'gwt-debug-cwCheckBox-' + days[daycount];
+              var span =$('<span />').addClass('gwt-CheckBox').attr('id',baseID);
+              var inputID = baseID +'-input';
+              var input = $('<input type="checkbox"/>').attr('id',inputID);
+              if(daycount>=5){
+                  input.attr('disabled','');
+              }
+              span.append(input);
+              span.append($('<label />').attr('for',inputID).attr('id',baseID + '-label').text(days[daycount]))
+               tbody.append($('<tr />').append($('<td />').append(span)));
+
+          }
+        }
+
+      function cellTablePanel(){
+            clearPanel();
+            setPanelTitle("Cell Table", "A table with cells");
+            var div = $('<div />');
+            var table = $('<table cellspacing="0" class="GALD-WOPD GALD-WOCH" style="width: 100%; table-layout: fixed; "></table>');
+            var colgroup = $('<colgroup><col style="width: 40px; "><col style="width: 20%; "><col style="width: 20%; "><col style="width: 130px; "><col style="width: 60%; "></colgroup>');
+            var thead = $('<thead><tr><th colspan="1" class="GALD-WOOC GALD-WOMC"><br></th><th colspan="1" class="GALD-WOOC GALD-WOMD">First Name</th><th colspan="1" class="GALD-WOOC GALD-WOMD">Last Name</th><th colspan="1" class="GALD-WOOC">Category</th><th colspan="1" class="GALD-WOOC GALD-WOMD  GALD-WOGD">Address</th></tr></thead>');
+          var tfoot = $('<tfoot style="display: none; "><tr><th colspan="5" class="GALD-WONC GALD-WOLC  GALD-WOFD"></th></tr></tfoot>');
+          var tbody = $('<tbody />');
+
+            $('.panel').append(div);
+           div.append(table);
+          table.append(colgroup);
+          table.append(thead);
+          table.append(tfoot);
+          table.append(tbody);
+
+          // create data 15 rows
+          // random name
+          var firstNames = ['Lynn', 'Bob', 'Alan', 'James', 'Vernon', 'William', 'Billie', 'Keeran', 'Archie', 'Simon', 'Joanne', 'Andrew', 'Anne', 'Carolyn', 'Carol', 'Fred', 'Velma', 'Daphne'];
+          var lastNames = ['Bishop', 'Wilberforce', 'Jackson', 'Butler', 'Phillips', 'West', 'East', 'North', 'South', 'Short', 'Baker', 'Farmer', 'Strong', 'Frame', 'Simpson', 'Smith', 'Price', 'Shaw', 'Fame'];
+          var streetEnd = ['Street','Lane','Place','Avenue','Close','Blvd','Way','Road','Parkway', 'Grove', 'Drive'];
+          var streetStart = ['First', 'Second', 'Third', 'Fourth', 'Fifth', 'Express', 'Pine', 'Arch', 'Cypress', 'Fast', 'Freedom', 'Dobbs'];
+          var categories = ['Friends', 'Family', 'Coworkers', 'Businesses', 'Contacts'];
+
+          var data = [];
+
+          for(var i=0; i<15; i++){
+            data[i] = {};
+            data[i].firstName = firstNames[Math.floor(Math.random()*(firstNames.length))];
+            data[i].lastName = lastNames[Math.floor(Math.random()*(lastNames.length))];
+            data[i].address = (Math.floor(Math.random()*978)) + ' ' + streetStart[Math.floor(Math.random()*(streetStart.length))] + ' ' + streetEnd[Math.floor(Math.random()*(streetEnd.length))];
+            data[i].category = categories[Math.floor(Math.random()*(categories.length))];
+          }
+
+          for(var i=0;i<data.length;i++){
+              var row = $('<tr onclick="" class="GALD-WOIC"/>');
+              row.append('<td class="GALD-WOHC GALD-WOJC GALD-WOKC"><div style="outline:none;" tabindex="0"><input type="checkbox" tabindex="-1"></div></td>');
+              row.append('<td class="GALD-WOHC GALD-WOJC"><div style="outline:none;" class="click">' + data[i].firstName + '</div></td>');
+              row.append('<td class="GALD-WOHC GALD-WOJC"><div style="outline:none;"  class="click">' + data[i].lastName + '</div></td>');
+
+              var select = $('<td class="GALD-WOHC GALD-WOJC"><div style="outline:none;"><select tabindex="-1"></select></div></td>');
+              for(o=0;o<categories.length;o++){
+                  var category = categories[o];
+                  var option = $('<option value="' + category + '">' + category + '</option>');
+                  if(category == data[i].category){
+                      option.attr('selected','selected');
+                  }
+                  select.find('select').append(option);
+              }
+              row.append(select);
+              row.append($('<td class="GALD-WOHC GALD-WOJC GALD-WOED"><div style="outline:none;">' + data[i].address + '</div></td>'));
+
+              $(".click").editable(function(value,settings){return(value);}, {onblur: 'submit'});
+
+              table.append(row);
+          }
+        }
+
+      function radioButtonsPanel(){
+            clearPanel();
+            setPanelTitle("Radio Button", "Basic RadioButtons");
+            $('.panel').append($('<table cellspacing="0" cellpadding="0" name="radiobutton"><tbody><tr><td align="left" style="vertical-align: top;"><div class="gwt-HTML"><b>Select your favorite color:</b></div></td></tr><tr><td align="left" style="vertical-align: top;"><span class="gwt-RadioButton" id="gwt-debug-cwRadioButton-color-blue"><input type="radio" name="color" id="gwt-debug-cwRadioButton-color-blue-input" tabindex="0"><label for="gwt-debug-cwRadioButton-color-blue-input" id="gwt-debug-cwRadioButton-color-blue-label">blue</label></span></td></tr><tr><td align="left" style="vertical-align: top;"><span class="gwt-RadioButton" id="gwt-debug-cwRadioButton-color-red"><input type="radio" name="color" id="gwt-debug-cwRadioButton-color-red-input" tabindex="0"><label for="gwt-debug-cwRadioButton-color-red-input" id="gwt-debug-cwRadioButton-color-red-label">red</label></span></td></tr><tr><td align="left" style="vertical-align: top;"><span class="gwt-RadioButton gwt-RadioButton-disabled" id="gwt-debug-cwRadioButton-color-yellow"><input type="radio" name="color" id="gwt-debug-cwRadioButton-color-yellow-input" tabindex="0" disabled=""><label for="gwt-debug-cwRadioButton-color-yellow-input" id="gwt-debug-cwRadioButton-color-yellow-label">yellow</label></span></td></tr><tr><td align="left" style="vertical-align: top;"><span class="gwt-RadioButton" id="gwt-debug-cwRadioButton-color-green"><input type="radio" name="color" id="gwt-debug-cwRadioButton-color-green-input" tabindex="0"><label for="gwt-debug-cwRadioButton-color-green-input" id="gwt-debug-cwRadioButton-color-green-label">green</label></span></td></tr><tr><td align="left" style="vertical-align: top;"><div class="gwt-HTML"><br><b>Select your favorite sport:</b></div></td></tr><tr><td align="left" style="vertical-align: top;"><span class="gwt-RadioButton" id="gwt-debug-cwRadioButton-sport-Baseball"><input type="radio" name="sport" id="gwt-debug-cwRadioButton-sport-Baseball-input" tabindex="0"><label for="gwt-debug-cwRadioButton-sport-Baseball-input" id="gwt-debug-cwRadioButton-sport-Baseball-label">Baseball</label></span></td></tr><tr><td align="left" style="vertical-align: top;"><span class="gwt-RadioButton" id="gwt-debug-cwRadioButton-sport-Basketball"><input type="radio" name="sport" id="gwt-debug-cwRadioButton-sport-Basketball-input" tabindex="0"><label for="gwt-debug-cwRadioButton-sport-Basketball-input" id="gwt-debug-cwRadioButton-sport-Basketball-label">Basketball</label></span></td></tr><tr><td align="left" style="vertical-align: top;"><span class="gwt-RadioButton" id="gwt-debug-cwRadioButton-sport-Football"><input type="radio" name="sport" id="gwt-debug-cwRadioButton-sport-Football-input" tabindex="0" checked=""><label for="gwt-debug-cwRadioButton-sport-Football-input" id="gwt-debug-cwRadioButton-sport-Football-label">Football</label></span></td></tr><tr><td align="left" style="vertical-align: top;"><span class="gwt-RadioButton" id="gwt-debug-cwRadioButton-sport-Hockey"><input type="radio" name="sport" id="gwt-debug-cwRadioButton-sport-Hockey-input" tabindex="0"><label for="gwt-debug-cwRadioButton-sport-Hockey-input" id="gwt-debug-cwRadioButton-sport-Hockey-label">Hockey</label></span></td></tr><tr><td align="left" style="vertical-align: top;"><span class="gwt-RadioButton" id="gwt-debug-cwRadioButton-sport-Soccer"><input type="radio" name="sport" id="gwt-debug-cwRadioButton-sport-Soccer-input" tabindex="0"><label for="gwt-debug-cwRadioButton-sport-Soccer-input" id="gwt-debug-cwRadioButton-sport-Soccer-label">Soccer</label></span></td></tr><tr><td align="left" style="vertical-align: top;"><span class="gwt-RadioButton" id="gwt-debug-cwRadioButton-sport-WaterPolo"><input type="radio" name="sport" id="gwt-debug-cwRadioButton-sport-WaterPolo-input" tabindex="0"><label for="gwt-debug-cwRadioButton-sport-WaterPolo-input" id="gwt-debug-cwRadioButton-sport-WaterPolo-label">Water Polo</label></span></td></tr></tbody></table>'));
+        }
+
+
+
+
+
+        $(document).ready(function() {
+
+
+            for(var menuCount = 0; menuCount < 5 /*menus.length*/; menuCount++){
+                var aMenu = menus[menuCount];
+                var asideMenu = createSideMenu(aMenu.name);
+                // create menu contents on the fly
+            }
+
+            $(".side_menu_body").hide();
+            getSideMenuHead('Widgets').prev().click();
+            checkboxPanel();
+
+
+
+        });
+    </script>
+    <style media="screen" type="text/css">
+
+
+.GALD-WOOC {
+border-bottom: 2px solid #6F7277;
+padding: 3px 15px;
+text-align: left;
+color: #4B4A4A;
+text-shadow: #DDF 1px 1px 0;
+overflow: hidden;
+}
+
+        .title {color: #4B4A4A;font-size: 17pt;font-weight: bold;margin: 0 10px;}
+        .description {
+color: #4B4A4A;
+padding: 10px 0;
+padding-top: 10px;
+padding-right: 0px;
+padding-bottom: 10px;
+padding-left: 0px;
+border-bottom: 1px solid #6F7277;
+border-bottom-width: 1px;
+border-bottom-style: solid;
+border-bottom-color: #6F7277;
+margin: 0 10px 12px 10px;
+margin-top: 0px;
+margin-right: 10px;
+margin-bottom: 12px;
+margin-left: 10px;
+}
+
+        .side_menu_head {
+            text-decoration: underline
+        }
+
+        .side_menu_body {
+            margin-left: 10px
+        }
+
+        .side_menu {
+            margin-left: 10px;
+            margin-bottom: 10px;
+            margin-top: 10px
+        }
+
+    </style>
+</head>
+<body>
+
+<!-- Side Menu -->
+<div class="GALD-WOHG"
+     style="overflow: auto; position: absolute; left: 0px; top: 0px; right: 0px; bottom: 0px; height: 400px; width:200px">
+    <div class="widget_menu">
+    </div>
+</div>
+<div class="panel" style="position: absolute; overflow-x: hidden; overflow-y: hidden; left: 225px; top: 0px; right: 0px; bottom: 0px;" >
+    <p>panel</p>
+</div>
+
+
+</body>
+</html>
